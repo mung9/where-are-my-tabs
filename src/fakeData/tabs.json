@@ -1,0 +1,64 @@
+{
+  "tabs": [
+    {
+      "index": 0,
+      "title": "Tab 1",
+      "url": "tab1.com",
+      "pinned": false,
+      "windowId": 439,
+      "active": false,
+      "favIconUrl": "facicon.ico",
+      "highlighted": false,
+      "incognito": false,
+      "discarded": false,
+      "autoDiscardable": true,
+      "id": 0,
+      "selected": false
+    },
+    {
+      "index": 1,
+      "title": "Tab 2",
+      "url": "tab2.com",
+      "pinned": true,
+      "windowId": 439,
+      "active": false,
+      "favIconUrl": "facicon.ico",
+      "highlighted": false,
+      "incognito": false,
+      "discarded": false,
+      "autoDiscardable": true,
+      "id": 1,
+      "selected": false
+    },
+    {
+      "index": 2,
+      "title": "Tab 3",
+      "url": "tab2.com",
+      "pinned": false,
+      "windowId": 439,
+      "active": true,
+      "favIconUrl": "facicon.ico",
+      "highlighted": false,
+      "incognito": false,
+      "discarded": false,
+      "autoDiscardable": true,
+      "id": 2,
+      "selected": false
+    },
+    {
+      "index": 3,
+      "title": "Tab 4",
+      "url": "tab2.com",
+      "pinned": false,
+      "windowId": 439,
+      "active": false,
+      "favIconUrl": "facicon.ico",
+      "highlighted": false,
+      "incognito": false,
+      "discarded": false,
+      "autoDiscardable": true,
+      "id": 3,
+      "selected": false
+    }
+  ]
+}
