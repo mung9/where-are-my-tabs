@@ -1,13 +1,15 @@
 import { Tab } from '../types/tab';
 import { TabItem } from '../types/tabItem';
 import { Group, NewGroup } from '../types/group';
-import { delay } from 'q';
+import { delay, reject } from 'q';
 import { NODE_ENV } from '../config/constants';
 import { tabs } from '../fakeData/tabs.json';
-import { groups } from '../fakeData/stored.json';
+// import { groups } from '../fakeData/stored.js';
+import { groups, postGroup, removeGroup } from '../fakeData/stored';
+import { resolve } from 'path';
 
 function generateId() {
-  return tabs.length;
+  return Date.now();
 }
 
 function isDev() {
@@ -35,8 +37,9 @@ async function getStoredGroups(): Promise<Group[]> {
 
 async function storeGroup(group: NewGroup): Promise<Group> {
   const newGroup = { ...group, id: generateId() };
-  if (NODE_ENV === 'development') {
+  if (isDev()) {
     await delay(1);
+    postGroup(newGroup);
     return newGroup;
   }
 
@@ -44,7 +47,63 @@ async function storeGroup(group: NewGroup): Promise<Group> {
   if (!groups) groups = [newGroup];
   else groups.push(newGroup);
 
+  console.log('new group:', newGroup);
   return new Promise<Group>((resolve) => chrome.storage.sync.set({ groups }, () => resolve(newGroup)));
+}
+
+async function updateGroup(group: Group): Promise<Group> {
+  if (isDev()) {
+    await delay(1);
+    updateGroup(group);
+    return group;
+  }
+
+  let groups = await getStoredGroups();
+  if (!groups) reject("The group with given id does not exists");
+  const index = groups.findIndex((g) => g.id === group.id);
+  groups[index] = group;
+
+  return new Promise<Group>((resolve) => chrome.storage.sync.set({ groups }, () => resolve(group)));
+}
+
+async function deleteGroup(group: Group): Promise<Group> {
+  if (isDev()) {
+    await delay(1);
+    return removeGroup(group);
+  }
+
+  let groups = await getStoredGroups();
+  if (!groups) reject("The group with given id does not exists");
+  const index = groups.findIndex((g) => g.id === group.id);
+  const deletedGroup = groups.splice(index, 1)[0];
+
+  return new Promise<Group>((resolve) => chrome.storage.sync.set({ groups }, () => resolve(deletedGroup)));
+}
+
+async function createTab(url: string, index: number, windowId?: number) {
+  const properties = { windowId, index, url };
+  return new Promise<Tab>((resolve) => {
+    chrome.tabs.create(properties, resolve);
+  });
+}
+
+async function createTabs(urls: string[]) {
+  if (NODE_ENV == 'development') {
+    urls.forEach((url) => console.log(`Opening a tab with url ${url}`));
+    return;
+  }
+
+  const currentTabs = await getTabs();
+  const firstIndex = currentTabs.length;
+  return new Promise<Tab[]>(
+    async (resolve) => {
+      const ps = urls.map(async (url, index) => {
+        return await createTab(url, firstIndex + index);
+      });
+      const createdTabs = await Promise.all(ps);
+      resolve(createdTabs);
+    }
+  )
 }
 
 function mapTabs2Items(tabs: Tab[]): TabItem[] {
@@ -55,7 +114,7 @@ function mapTabs2Items(tabs: Tab[]): TabItem[] {
       title,
       url,
       favIconUrl,
-      isSelected:false
+      isSelected: false
     } as TabItem;
   });
 }
@@ -64,5 +123,8 @@ export {
   getTabs,
   getStoredGroups,
   storeGroup,
+  updateGroup,
+  deleteGroup,
+  createTabs,
   mapTabs2Items
 }

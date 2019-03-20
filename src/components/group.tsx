@@ -7,30 +7,72 @@ export interface GroupProps {
   group: Group,
   isEditable: boolean,
   isDetailed: boolean,
+  onConfirmEdit: (group: Group) => void,
   onChangeName: React.ChangeEventHandler,
-  onSelectTab: React.MouseEventHandler<HTMLLIElement>,
+  onExcludeTab: React.MouseEventHandler<HTMLLIElement>,
+  onOpenTab: {
+    (urls: string[]): void;
+    (e: React.MouseEvent, group: Group): void;
+  }
+  onDelete: (group: Group) => void,
   toggleUpdate: (group: Group) => void
 }
 
 const GroupBox: React.SFC<GroupProps> = (props: GroupProps) => {
+  const {
+    group,
+    isEditable,
+    isDetailed,
+    onConfirmEdit,
+    onChangeName,
+    onExcludeTab,
+    onOpenTab,
+    onDelete,
+    toggleUpdate,
+  } = props;
+
   const renderName = () => {
-    const { group, isEditable, onChangeName } = props;
+    let groupName: JSX.Element;
+    let onClickName: React.MouseEventHandler | undefined = undefined;
+    if (isEditable) {
+      groupName = <input type="text" value={group.name} onChange={onChangeName} />;
+    }
+    else {
+      groupName = <h3>{group.name}</h3>
+
+      const urls = group.tabItems.map((i) => i.url);
+      onClickName = () => onOpenTab(urls);
+    }
+
     return (
-      <div className="group-name">
-        {
-          isEditable ?
-            <input type="text" value={group.name} onChange={onChangeName} /> :
-            <h3>{group.name}</h3>
-        }
+      <div onClick={onClickName} className="group-name">
+        {groupName}
       </div>
     );
   }
 
+  const renderBtnsOnEdit = () => {
+    return (
+      <React.Fragment>
+        <button onClick={() => toggleUpdate(group)}>Cancel</button>
+        <button onClick={() => onConfirmEdit(group)}>Confirm</button>
+      </React.Fragment>
+    );
+  }
+
+  const renderBtnsOnDefault = () => {
+    return (
+      <React.Fragment>
+        <button onClick={() => toggleUpdate(group)}>Modify</button>
+        <button onClick={() => onDelete(group)}>Delete</button>
+      </React.Fragment>
+    );
+  }
+
   const renderNav = () => {
-    const { toggleUpdate, group } = props;
     return (
       <div className="group-nav">
-        <button onClick={() => toggleUpdate(group)}>수정</button>
+        {isEditable ? renderBtnsOnEdit() : renderBtnsOnDefault()}
       </div>
     );
   }
@@ -44,16 +86,15 @@ const GroupBox: React.SFC<GroupProps> = (props: GroupProps) => {
     );
   }
 
-  const { group, isDetailed, isEditable, onSelectTab } = props;
   return (
     <div className="group">
       {renderHeader()}
-      {isDetailed ?
-        <TabItems
-          tabs={group.tabItems}
-          onSelectTab={isEditable?onSelectTab:undefined}
-        /> :
-        null
+      {
+        isDetailed
+          ? <TabItems
+            tabs={group.tabItems}
+            onSelectTab={isEditable ? onExcludeTab : (e) => { onOpenTab(e, group) }} />
+          : null
       }
     </div>
   );

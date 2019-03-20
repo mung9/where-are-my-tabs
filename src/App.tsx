@@ -1,18 +1,20 @@
+/**
+ * Entry Point
+ */
+
 import React, { Component, FormEvent } from 'react';
 import Header from './components/header';
 import GroupBox from './components/group';
-import { getTabs, getStoredGroups, storeGroup, mapTabs2Items } from './services/chrome';
+import { getTabs, getStoredGroups, storeGroup, updateGroup, deleteGroup, mapTabs2Items, createTabs } from './services/chrome';
 import { UpdateInfo } from './types/UpdateInfo';
-import { Group, NewGroup } from './types/group';
+import { Group, isDummy, emptyGroup } from './types/group';
 import { TabItem } from './types/tabItem';
-import logo from './logo.svg';
 import './App.css';
-import { exists } from 'fs';
 
 class App extends Component {
   state: AppState = {
     groups: [],
-    editGroup: { id: undefined, name: '', tabItems: [] },
+    editGroup: emptyGroup,
     query: '',
     updates: {}
   }
@@ -23,23 +25,46 @@ class App extends Component {
     editGroup.tabItems = mapTabs2Items(curTabs);
 
     const groups = await getStoredGroups();
-
     this.setState({ groups, editGroup });
   }
 
   handleQuery = (query: string) => {
-    console.log('query: ', query);
+    // TODO: 검색어에 대한 결과를 출력
+    
+    this.setState({query});
   }
 
   handleChangeGroupName = (e: React.ChangeEvent, originalGroup: Group) => {
     const group = { ...originalGroup };
     const name = (e.currentTarget as HTMLInputElement).value;
     group.name = name;
-    if (!group.id) return this.setState({ editGroup: group });
+    if (isDummy(group)) return this.setState({ editGroup: group });
 
     const updates = { ...this.state.updates };
     updates[group.id] = { group };
     this.setState({ updates });
+  }
+  
+  handleOpenTab(urls: string[]): void;
+  handleOpenTab(e: React.MouseEvent, group: Group): void;
+  handleOpenTab(urlsOrEvent: string[] | React.MouseEvent, group?: Group) {
+    let urls: string[];
+    if ('currentTarget' in urlsOrEvent) {
+      if(!group) return console.log('The parameter `group` must be provided.');
+      const e = urlsOrEvent;
+      const tabIdInString = (e.currentTarget as HTMLLIElement).getAttribute('value');
+      if (!tabIdInString) return console.log('The id of the group is required');
+
+      const tabId = parseInt(tabIdInString);
+
+      const clickedTab = group.tabItems.find((item) => item.id === tabId);
+      if (!clickedTab) return console.log('The tab with the given id does not exist.');
+
+      urls = [clickedTab.url];
+    }
+    else urls = urlsOrEvent;
+
+    createTabs(urls);
   }
 
   handleSelectTab = (e: React.MouseEvent, group: Group) => {
@@ -47,10 +72,8 @@ class App extends Component {
     if (!tabIdInString) return console.log('The id of the group is required');
 
     const tabId = parseInt(tabIdInString);
-    // const tabItem = group.tabItems.find((item) => item.id === id);
-    // if (!tabItem) return console.log("The tab item with given id does not exist.");
 
-    if (!group.id) {
+    if (isDummy(group)) {
       const editGroup = { ...group };
       const tabItems = [...editGroup.tabItems];
       const index = tabItems.findIndex((item) => item.id === tabId);
@@ -79,13 +102,16 @@ class App extends Component {
   }
 
   handleGroup = async () => {
-    const editGroup = this.state.editGroup;
-    if (editGroup === null) return;
-
     const groups = [...this.state.groups];
-    const group = await storeGroup(editGroup);
-    groups.push(group);
-    this.setState({ groups, groupName: '' });
+    let editGroup = { ...this.state.editGroup };
+    editGroup.tabItems = this.filterExcludedTabs(editGroup.tabItems);
+    editGroup = await storeGroup(editGroup);
+    groups.push(editGroup);
+
+    editGroup = emptyGroup;
+    const curTabs = await getTabs();
+    editGroup.tabItems = mapTabs2Items(curTabs);
+    this.setState({ groups, editGroup: emptyGroup });
   }
 
   handleChange = (e: React.ChangeEvent): void => {
@@ -94,7 +120,7 @@ class App extends Component {
   }
 
   toggleUpdate = (group: Group) => {
-    if (!group.id) return console.log('invalid group: no id');
+    if (isDummy(group)) return console.log('invalid group: no id');
 
     const groups = [...this.state.groups];
     const index = groups.findIndex((g) => g.id === group.id);
@@ -117,16 +143,46 @@ class App extends Component {
     this.setState({ updates });
   }
 
+  handleConfirmUpdate = async (group: Group) => {
+    const tabItems = this.filterExcludedTabs(group.tabItems);
+    let updatedGroup = { ...group, tabItems };
+    updatedGroup = await updateGroup(updatedGroup);
+
+    const groups = [...this.state.groups];
+    const index = groups.findIndex((g) => g.id === updatedGroup.id);
+    groups[index] = updatedGroup;
+
+    const updates = { ...this.state.updates };
+    delete updates[updatedGroup.id];
+
+    this.setState({ groups, updates });
+  }
+
+  filterExcludedTabs = (src: TabItem[]) => {
+    return src.filter((item) => !item.isSelected);
+  }
+
+  handleDeleteGroup = async (group: Group) => {
+    const deletedGroup = await deleteGroup(group);
+    const groups = [...this.state.groups];
+    const index = groups.findIndex((g) => g.id === deletedGroup.id);
+    groups.splice(index, 1);
+
+    const updates = { ...this.state.updates };
+    if (updates[deletedGroup.id]) {
+      delete updates[deletedGroup.id];
+    }
+
+    this.setState({ groups, updates });
+  }
+
   renderGroups = () => {
     const updates = this.state.updates;
-
     return (
       <div className="groups-container">
         {
           // group list
           this.state.groups.map((group, index) => {
-            if (!group.id) return console.log('A tab does not have id property.');
-
             const isEditable = group.id in updates;
             return (
               <div className="group-row">
@@ -136,8 +192,11 @@ class App extends Component {
                   isEditable={isEditable}
                   isDetailed={true}
                   toggleUpdate={this.toggleUpdate}
-                  onChangeName={(e: React.ChangeEvent) => { this.handleChangeGroupName(e, group) }}
-                  onSelectTab={(e: React.MouseEvent) => { this.handleSelectTab(e, group) }}
+                  onDelete={this.handleDeleteGroup}
+                  onConfirmEdit={this.handleConfirmUpdate}
+                  onChangeName={(e) => { this.handleChangeGroupName(e, group) }}
+                  onExcludeTab={(e) => { this.handleSelectTab(e, group) }}
+                  onOpenTab={this.handleOpenTab}
                 />
               </div>
             );

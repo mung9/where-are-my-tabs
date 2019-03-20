@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { TabItem } from '../types/tabItem';
+import { getFaviconUrl } from '../common/common';
 
 export interface TabItemsProps {
   tabs: TabItem[],
@@ -13,10 +14,11 @@ const TabItems: React.SFC<TabItemsProps> = (props: TabItemsProps) => {
     return (<div className="footer"><span>{url}</span></div>);
   }
 
-  const renderContent = (title: string, favIconUrl: string | undefined) => {
+  const renderContent = (title: string, url: string) => {
+    const faviconUrl = getFaviconUrl(url);
     return (
       <div className="content">
-        <img className='icon' src={favIconUrl} alt="" />
+        <img className='icon' src={faviconUrl} alt="kl;" />
         <div className="tab-title">{title}</div>
       </div>
     );
@@ -29,7 +31,7 @@ const TabItems: React.SFC<TabItemsProps> = (props: TabItemsProps) => {
     return (
       <li key={index} value={tab.id} onClick={onSelectTab} className={classes}>
         {renderHeader()}
-        {renderContent(tab.title, tab.favIconUrl)}
+        {renderContent(tab.title, tab.url)}
         {renderFooter(tab.url)}
       </li>
     );

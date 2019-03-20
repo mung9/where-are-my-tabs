@@ -18,19 +18,8 @@ export interface HeaderState {
 
 class Header extends React.Component<HeaderProps, HeaderState> {
   state = {
-    groupName: '',
     isDetailed: false
   }
-
-  // isStateProperty = (obj: any): obj is HeaderState => {
-  //   return true;
-  // }
-
-  // handleChange = (e: React.ChangeEvent): void => {
-  //   const { name, value } = (e.currentTarget as HTMLInputElement);
-  //   const obj = { [name]: value };
-  //   if (this.isStateProperty(obj)) this.setState(obj);
-  // }
 
   toggleDetail = (): void => {
     this.setState({ isDetailed: !this.state.isDetailed });
@@ -38,7 +27,6 @@ class Header extends React.Component<HeaderProps, HeaderState> {
 
   renderDetail = () => {
     const { group, onSelectTab } = this.props;
-    console.log('hedaer',group.tabItems);
     return (
       <div className="new-group-detail">
         <TabItems tabs={group.tabItems} onSelectTab={onSelectTab} />
@@ -57,7 +45,7 @@ class Header extends React.Component<HeaderProps, HeaderState> {
           </div>
           <div className="new-group-layout">
             <input type="text" name='groupName' value={group.name} onChange={onChangeGroupName} placeholder='Group Name...' />
-            <button onClick={onGroup}>Group</button>
+            <button onClick={()=>{this.setState({isDetailed:false}); onGroup();}}>Group</button>
             <button onClick={this.toggleDetail}>Details</button>
           </div>
           <div className="search">
