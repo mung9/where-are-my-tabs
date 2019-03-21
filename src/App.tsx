@@ -208,7 +208,6 @@ class App extends Component {
                   key={index}
                   group={isEditable ? updates[group.id].group : group}
                   isEditable={isEditable}
-                  isDetailed={true}
                   toggleUpdate={this.toggleUpdate}
                   onDelete={this.handleDeleteGroup}
                   onConfirmEdit={this.handleConfirmUpdate}

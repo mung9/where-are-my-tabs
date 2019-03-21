@@ -3,10 +3,9 @@ import { TabItem } from './../types/tabItem';
 import { Group } from './../types/group';
 import TabItems from './tabItems';
 
-export interface GroupProps {
+export interface GroupBoxProps {
   group: Group,
   isEditable: boolean,
-  isDetailed: boolean,
   onConfirmEdit: (group: Group) => void,
   onChangeName: React.ChangeEventHandler,
   onExcludeTab: React.MouseEventHandler<HTMLLIElement>,
@@ -19,25 +18,38 @@ export interface GroupProps {
   filter: (tab: TabItem) => boolean
 }
 
-const GroupBox: React.SFC<GroupProps> = (props: GroupProps) => {
-  const {
-    group,
-    isEditable,
-    isDetailed,
-    onConfirmEdit,
-    onChangeName,
-    onExcludeTab,
-    onOpenTab,
-    onDelete,
-    toggleUpdate,
-    filter
-  } = props;
+export interface GroupBoxState {
+  isDetailed: boolean,
+}
 
-  const renderName = () => {
+class GroupBox extends React.Component<GroupBoxProps, GroupBoxState> {
+  state = { isDetailed: true }
+  nameInput = React.createRef<HTMLInputElement>();
+
+  componentDidUpdate(prevProps: GroupBoxProps, prevState: GroupBoxState) {
+    if (!prevProps.isEditable && this.props.isEditable) {
+      const input = this.nameInput.current;
+      if (input) input.focus();
+    }
+  }
+
+  toggleDetail = (e: React.MouseEvent) => {
+    console.log(e.target);
+    if (!(e.target as Element).className.includes('header')) {
+      return;
+    }
+
+    const isDetailed = !this.state.isDetailed;
+    this.setState({ isDetailed });
+  }
+
+  renderName = () => {
+    const { isEditable, group, onChangeName, onOpenTab } = this.props;
+
     let groupName: JSX.Element;
     let onClickName: React.MouseEventHandler | undefined = undefined;
     if (isEditable) {
-      groupName = <input type="text" value={group.name} onChange={onChangeName} />;
+      groupName = <input ref={this.nameInput} type="text" value={group.name} onChange={onChangeName} />;
     }
     else {
       groupName = <h3>{group.name}</h3>
@@ -53,7 +65,8 @@ const GroupBox: React.SFC<GroupProps> = (props: GroupProps) => {
     );
   }
 
-  const renderBtnsOnEdit = () => {
+  renderBtnsOnEdit = () => {
+    const { group, onConfirmEdit, toggleUpdate } = this.props;
     return (
       <React.Fragment>
         <i onClick={() => onConfirmEdit(group)} className="fas fa-check fa-2x"></i>
@@ -62,7 +75,8 @@ const GroupBox: React.SFC<GroupProps> = (props: GroupProps) => {
     );
   }
 
-  const renderBtnsOnDefault = () => {
+  renderBtnsOnDefault = () => {
+    const { group, onDelete, toggleUpdate } = this.props;
     return (
       <React.Fragment>
         <i onClick={() => toggleUpdate(group)} className="far fa-edit fa-2x"></i>
@@ -71,38 +85,46 @@ const GroupBox: React.SFC<GroupProps> = (props: GroupProps) => {
     );
   }
 
-  const renderNav = () => {
+  renderNav = () => {
+    const { isEditable } = this.props;
     return (
       <div className="group-nav">
-        {isEditable ? renderBtnsOnEdit() : renderBtnsOnDefault()}
+        {isEditable ? this.renderBtnsOnEdit() : this.renderBtnsOnDefault()}
       </div>
     );
   }
 
-  const renderHeader = () => {
+  renderHeader = () => {
     return (
-      <div className="header">
-        {renderName()}
-        {renderNav()}
+      <div onClick={this.toggleDetail} className="header">
+        {this.renderName()}
+        {this.renderNav()}
       </div>
     );
   }
 
-  const filteredTabs = group.tabItems.filter((item) => filter(item));
-  if (filteredTabs.length < 1) return null;
-  
-  return (
-    <div className="group">
-      {renderHeader()}
-      {
-        isDetailed
-          ? <TabItems
-            tabs={filteredTabs}
-            onSelectTab={isEditable ? onExcludeTab : (e) => { onOpenTab(e, group) }} />
-          : null
-      }
-    </div>
-  );
+  render() {
+    const { filter } = this.props;
+    const { group, isEditable, onExcludeTab, onOpenTab } = this.props;
+    const { isDetailed } = this.state;
+    const filteredTabs = group.tabItems.filter((item) => filter(item));
+    if (filteredTabs.length < 1) return null;
+
+    const classes = `group ${isDetailed ? "group-detailed" : ""}`;
+
+    return (
+      <div className={classes}>
+        {this.renderHeader()}
+        {
+          isDetailed
+            ? <TabItems
+              tabs={filteredTabs}
+              onSelectTab={isEditable ? onExcludeTab : (e) => { onOpenTab(e, group) }} />
+            : null
+        }
+      </div>
+    );
+  }
 }
 
 export default GroupBox;
