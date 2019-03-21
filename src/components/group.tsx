@@ -15,7 +15,8 @@ export interface GroupProps {
     (e: React.MouseEvent, group: Group): void;
   }
   onDelete: (group: Group) => void,
-  toggleUpdate: (group: Group) => void
+  toggleUpdate: (group: Group) => void,
+  filter: (tab: TabItem) => boolean
 }
 
 const GroupBox: React.SFC<GroupProps> = (props: GroupProps) => {
@@ -29,6 +30,7 @@ const GroupBox: React.SFC<GroupProps> = (props: GroupProps) => {
     onOpenTab,
     onDelete,
     toggleUpdate,
+    filter
   } = props;
 
   const renderName = () => {
@@ -54,8 +56,8 @@ const GroupBox: React.SFC<GroupProps> = (props: GroupProps) => {
   const renderBtnsOnEdit = () => {
     return (
       <React.Fragment>
-        <button onClick={() => toggleUpdate(group)}>Cancel</button>
-        <button onClick={() => onConfirmEdit(group)}>Confirm</button>
+        <i onClick={() => onConfirmEdit(group)} className="fas fa-check fa-2x"></i>
+        <i onClick={() => toggleUpdate(group)} className="fas fa-times fa-2x"></i>
       </React.Fragment>
     );
   }
@@ -63,8 +65,8 @@ const GroupBox: React.SFC<GroupProps> = (props: GroupProps) => {
   const renderBtnsOnDefault = () => {
     return (
       <React.Fragment>
-        <button onClick={() => toggleUpdate(group)}>Modify</button>
-        <button onClick={() => onDelete(group)}>Delete</button>
+        <i onClick={() => toggleUpdate(group)} className="far fa-edit fa-2x"></i>
+        <i onClick={() => onDelete(group)} className="far fa-trash-alt fa-2x"></i>
       </React.Fragment>
     );
   }
@@ -86,13 +88,16 @@ const GroupBox: React.SFC<GroupProps> = (props: GroupProps) => {
     );
   }
 
+  const filteredTabs = group.tabItems.filter((item) => filter(item));
+  if (filteredTabs.length < 1) return null;
+  
   return (
     <div className="group">
       {renderHeader()}
       {
         isDetailed
           ? <TabItems
-            tabs={group.tabItems}
+            tabs={filteredTabs}
             onSelectTab={isEditable ? onExcludeTab : (e) => { onOpenTab(e, group) }} />
           : null
       }

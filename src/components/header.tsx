@@ -37,16 +37,23 @@ class Header extends React.Component<HeaderProps, HeaderState> {
   render() {
     const { group, query, onChangeGroupName, onSelectTab, onGroup, onQuery } = this.props;
     const { isDetailed } = this.state;
+    const arrowClass = isDetailed ? "rot-180" : null;
     return (
       <header>
         <div className="header-row">
           <div className="logo">
-            <h1>LOGO</h1>
+            <h1>WHERE ARE MY TABS?</h1>
           </div>
           <div className="new-group-layout">
-            <input type="text" name='groupName' value={group.name} onChange={onChangeGroupName} placeholder='Group Name...' />
-            <button onClick={()=>{this.setState({isDetailed:false}); onGroup();}}>Group</button>
-            <button onClick={this.toggleDetail}>Details</button>
+            <input type="text" name='groupName' value={group.name} onChange={onChangeGroupName} placeholder='Group Name' />
+            <i
+              onClick={() => { this.setState({ isDetailed: false }); onGroup(); }}
+              className="fas fa-plus fa-2x">
+            </i>
+            <i
+              onClick={this.toggleDetail}
+              className={`fas fa-chevron-down fa-2x ${arrowClass}`}>
+            </i>
           </div>
           <div className="search">
             <input type="text" name='query' value={query} onChange={(e) => onQuery(e.currentTarget.value)} placeholder='Search' />

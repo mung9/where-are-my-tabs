@@ -10,6 +10,7 @@ import { UpdateInfo } from './types/UpdateInfo';
 import { Group, isDummy, emptyGroup } from './types/group';
 import { TabItem } from './types/tabItem';
 import './App.css';
+import '@fortawesome/fontawesome-free/css/all.css';
 
 class App extends Component {
   state: AppState = {
@@ -25,13 +26,14 @@ class App extends Component {
     editGroup.tabItems = mapTabs2Items(curTabs);
 
     const groups = await getStoredGroups();
+    console.log('groups:', groups);
     this.setState({ groups, editGroup });
   }
 
   handleQuery = (query: string) => {
     // TODO: 검색어에 대한 결과를 출력
-    
-    this.setState({query});
+
+    this.setState({ query });
   }
 
   handleChangeGroupName = (e: React.ChangeEvent, originalGroup: Group) => {
@@ -44,13 +46,13 @@ class App extends Component {
     updates[group.id] = { group };
     this.setState({ updates });
   }
-  
+
   handleOpenTab(urls: string[]): void;
   handleOpenTab(e: React.MouseEvent, group: Group): void;
   handleOpenTab(urlsOrEvent: string[] | React.MouseEvent, group?: Group) {
     let urls: string[];
     if ('currentTarget' in urlsOrEvent) {
-      if(!group) return console.log('The parameter `group` must be provided.');
+      if (!group) return console.log('The parameter `group` must be provided.');
       const e = urlsOrEvent;
       const tabIdInString = (e.currentTarget as HTMLLIElement).getAttribute('value');
       if (!tabIdInString) return console.log('The id of the group is required');
@@ -176,6 +178,22 @@ class App extends Component {
     this.setState({ groups, updates });
   }
 
+  handleFilter = (tab: TabItem) => {
+    const query = this.state.query.toLowerCase();
+    if (!query) return true;
+
+    const title = tab.title.toLowerCase();
+
+
+    if (title.includes(query)) return true;
+    
+    // TODO: url에 포함된 특수기호 (-, ., _) 등 제거하고 비교하기
+    const url = tab.url.toLowerCase();
+    if (url.includes(query)) return true;
+
+    return false;
+  }
+
   renderGroups = () => {
     const updates = this.state.updates;
     return (
@@ -197,11 +215,12 @@ class App extends Component {
                   onChangeName={(e) => { this.handleChangeGroupName(e, group) }}
                   onExcludeTab={(e) => { this.handleSelectTab(e, group) }}
                   onOpenTab={this.handleOpenTab}
+                  filter={this.handleFilter}
                 />
               </div>
             );
           })
-          // end
+          // group list end
         }
       </div>
     );

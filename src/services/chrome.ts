@@ -8,6 +8,23 @@ import { tabs } from '../fakeData/tabs.json';
 import { groups, postGroup, removeGroup } from '../fakeData/stored';
 import { resolve } from 'path';
 
+// function makeItSmaller(group: Group): SmallGroup;
+// function makeItSmaller(tabItem: TabItem): SmallTabItem;
+// function makeItSmaller(big: Group | TabItem): SmallGroup | SmallTabItem {
+//   if ('tabItems' in big) {
+//     const group = big;
+//     const tabItems = group.tabItems.map((item) => makeItSmaller(item));
+
+//     return { name: group.name, tabItems };
+//   }
+
+//   const tabItem = big;
+//   return {
+//     title: tabItem.title,
+//     url: tabItem.url
+//   };
+// }
+
 function generateId() {
   return Date.now();
 }
@@ -31,7 +48,7 @@ async function getStoredGroups(): Promise<Group[]> {
   }
 
   return new Promise<Group[]>((resolve) => {
-    chrome.storage.sync.get('groups', (data: any) => { console.log(data); resolve(data.groups) });
+    chrome.storage.local.get('groups', (data: any) => { console.log('getStoredGroups:',data); resolve(data.groups||[]) });
   });
 }
 
@@ -48,7 +65,7 @@ async function storeGroup(group: NewGroup): Promise<Group> {
   else groups.push(newGroup);
 
   console.log('new group:', newGroup);
-  return new Promise<Group>((resolve) => chrome.storage.sync.set({ groups }, () => resolve(newGroup)));
+  return new Promise<Group>((resolve) => chrome.storage.local.set({ groups }, () => resolve(newGroup)));
 }
 
 async function updateGroup(group: Group): Promise<Group> {
@@ -63,7 +80,7 @@ async function updateGroup(group: Group): Promise<Group> {
   const index = groups.findIndex((g) => g.id === group.id);
   groups[index] = group;
 
-  return new Promise<Group>((resolve) => chrome.storage.sync.set({ groups }, () => resolve(group)));
+  return new Promise<Group>((resolve) => chrome.storage.local.set({ groups }, () => resolve(group)));
 }
 
 async function deleteGroup(group: Group): Promise<Group> {
@@ -77,7 +94,7 @@ async function deleteGroup(group: Group): Promise<Group> {
   const index = groups.findIndex((g) => g.id === group.id);
   const deletedGroup = groups.splice(index, 1)[0];
 
-  return new Promise<Group>((resolve) => chrome.storage.sync.set({ groups }, () => resolve(deletedGroup)));
+  return new Promise<Group>((resolve) => chrome.storage.local.set({ groups }, () => resolve(deletedGroup)));
 }
 
 async function createTab(url: string, index: number, windowId?: number) {

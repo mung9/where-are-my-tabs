@@ -8,10 +8,12 @@ export interface TabItemsProps {
 }
 
 const TabItems: React.SFC<TabItemsProps> = (props: TabItemsProps) => {
-  const renderHeader = () => { return (<div className="header">2 days ago</div>); }
+  // const renderHeader = () => { return (<div className="header">2 days ago</div>); }
+  const renderHeader = () => null;
 
   const renderFooter = (url: string) => {
-    return (<div className="footer"><span>{url}</span></div>);
+    // return (<div className="footer"><span>{url}</span></div>);
+    return null;
   }
 
   const renderContent = (title: string, url: string) => {
@@ -19,7 +21,10 @@ const TabItems: React.SFC<TabItemsProps> = (props: TabItemsProps) => {
     return (
       <div className="content">
         <img className='icon' src={faviconUrl} alt="kl;" />
-        <div className="tab-title">{title}</div>
+        <div className="desc">
+          <div className="tab-title">{title}</div>
+          <div className="url"><span>{url}</span></div>
+        </div>
       </div>
     );
   }
