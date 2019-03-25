@@ -6,8 +6,8 @@ export const groups = [
     "name": "group1",
     "tabItems": [
       {
-        "title": "Naver",
-        "url": "https://www.naver.com",
+        "title": "The Best Online Courses To Learn Node Js – Quick Code – Medium",
+        "url": "https://medium.com/quick-code/the-best-tutorials-to-learn-node-js-34818d757013",
         "id": 0,
         "isSelected": false
       },

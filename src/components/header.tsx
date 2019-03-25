@@ -2,6 +2,7 @@ import * as React from 'react';
 import GroupBox from './group';
 import { Group, NewGroup } from './../types/group';
 import TabItems from './tabItems';
+import KeyCode from '../common/key';
 
 export interface HeaderProps {
   query: string,
@@ -25,6 +26,12 @@ class Header extends React.Component<HeaderProps, HeaderState> {
     this.setState({ isDetailed: !this.state.isDetailed });
   }
 
+  handleKeyDown = (e: React.KeyboardEvent) => {
+    if(e.keyCode === KeyCode.ENTER){
+      this.props.onGroup();
+    }
+  }
+
   renderDetail = () => {
     const { group, onSelectTab } = this.props;
     return (
@@ -45,7 +52,7 @@ class Header extends React.Component<HeaderProps, HeaderState> {
             <h1>WHERE ARE MY TABS?</h1>
           </div>
           <div className="new-group-layout">
-            <input type="text" name='groupName' value={group.name} onChange={onChangeGroupName} placeholder='Group Name' />
+            <input type="text" name='groupName' value={group.name} onKeyDown={this.handleKeyDown} onChange={onChangeGroupName} maxLength={10} placeholder='Group Name' />
             <i
               onClick={() => { this.setState({ isDetailed: false }); onGroup(); }}
               className="fas fa-plus fa-2x">

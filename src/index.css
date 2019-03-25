@@ -16,10 +16,6 @@ em{font-style:italic;}
 
 body {
   background-color:#4a69bd;
-  margin: 0;
-  margin-block-end: 0;
-  margin-block-start: 0;
-  padding: 0;
   box-sizing: border-box;
   /* background-color: #ebc8c8; */
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
@@ -50,6 +46,7 @@ input {
   padding: 5px 10px ;
   border: 2px solid #f1f1f1;
   border-radius: 9px;
+  ime-mode: disabled;
   transition: background-color 0.5s;
   /* border-bottom: 1px solid gray; */
 }
@@ -88,7 +85,7 @@ header .header-row * {
 }
 
 header .header-row .new-group-layout {
-  flex: 1;
+  flex: 0.7;
   order:1;
   display: flex;
 }
@@ -105,7 +102,7 @@ header .header-row .new-group-layout i:hover{
 header .header-row .logo {
   cursor: default;
   color: #f1f1f1;
-  flex: 0.5;
+  flex: 1;
   order: 2;
   display: flex;
   transition: text-shadow 0.4s;
@@ -123,7 +120,7 @@ header .header-row .logo h1{
 
 header .header-row .search {
   text-align: right;
-  flex: 1;
+  flex: 0.7;
   order:3;
 }
 
@@ -171,6 +168,7 @@ header .header-row .new-group-detail {
 .group .tab-container{
   padding-bottom: 30px;
   transition: transform 1s, opacity 1s;
+  display:flex;
 }
 
 .groups-layout .groups-container .group-row .group .tab-container {
@@ -213,6 +211,7 @@ header .header-row .new-group-detail {
     opacity: 1;
   }
 } 
+*/
 
 @keyframes fadein{
   0% {
@@ -223,7 +222,6 @@ header .header-row .new-group-detail {
     opacity: 1;
   }
 }
-*/
 
 .group .header {
   cursor: pointer;
@@ -287,7 +285,6 @@ header .header-row .new-group-detail {
 
  .tab-container .tab-item{
   cursor: pointer;
-
   flex-basis: 300px;
   max-width: 300px;
   min-width: 300px;
@@ -340,6 +337,13 @@ header .header-row .new-group-detail {
   margin: auto;
   flex: 1;
 }
+
+/* .tab-item .content .desc .tab-title,
+.tab-item .content .desc .url{
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+} */
 
 .tab-item .content .desc .tab-title{
   /* color: #111111; */

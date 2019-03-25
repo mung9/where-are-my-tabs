@@ -4,7 +4,23 @@
   "version": "0.0.0",
   "version_name": "0.0.0",
   "manifest_version": 2,
-  "permissions": ["tabs", "storage", "chrome://favicon/"],
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
+  "permissions": [
+    "tabs",
+    "storage",
+    "chrome://favicon/"
+  ],
+  "commands": {
+    "group-current-tabs": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+S"
+      },
+      "description": "SHIT"
+    }
+  },
   "browser_action": {
     "default_title": "new tab",
     "default_icon": "image/icon48.png"

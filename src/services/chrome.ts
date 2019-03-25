@@ -8,37 +8,56 @@ import { tabs } from '../fakeData/tabs.json';
 import { groups, postGroup, removeGroup } from '../fakeData/stored';
 import { resolve } from 'path';
 
-// function makeItSmaller(group: Group): SmallGroup;
-// function makeItSmaller(tabItem: TabItem): SmallTabItem;
-// function makeItSmaller(big: Group | TabItem): SmallGroup | SmallTabItem {
-//   if ('tabItems' in big) {
-//     const group = big;
-//     const tabItems = group.tabItems.map((item) => makeItSmaller(item));
-
-//     return { name: group.name, tabItems };
-//   }
-
-//   const tabItem = big;
-//   return {
-//     title: tabItem.title,
-//     url: tabItem.url
-//   };
-// }
-
-function generateId() {
-  return Date.now();
+interface MyWindow extends Window {
+  generateId: () => number;
+  generateGroupName: () => string;
+  getTabItems: () => Promise<TabItem[]>;
+  getStoredGroups: () => Promise<Group[]>;
+  storeGroup: (group: NewGroup) => Promise<Group>;
+  updateGroup: (group: Group) => Promise<Group>;
+  deleteGroup: (group: Group) => Promise<Group>
+  openTab: (url: string, index: number, windowId?: number) => Promise<Tab>
+  openTabs: (urls: string[]) => Promise<Tab[]>
+  mapTabs2Items: (tabs: Tab[]) => TabItem[]
 }
+
+let res = null;
+if (chrome && chrome.extension) {
+  res = chrome.extension.getBackgroundPage();
+}
+if (!res) {
+  console.log('!!!!!');
+}
+const background = res as MyWindow;
+console.log('background:', background);
 
 function isDev() {
   return (NODE_ENV === 'development');
 }
 
-async function getTabs(): Promise<Tab[]> {
+function generateId() {
+  if(isDev()){
+    return Date.now();
+  }
+  
+  return background.generateId();
+}
+
+async function generateGroupName() {
+  if(isDev()){
+    return new Date().toDateString();
+  }
+
+  return await background.generateGroupName();
+}
+
+async function getTabItems(): Promise<TabItem[]> {
   if (isDev()) {
     await delay(1);
     return tabs;
   }
-  return new Promise<Tab[]>((resolve) => chrome.tabs.query({ currentWindow: true }, resolve));
+
+  return background.getTabItems();
 }
 
 async function getStoredGroups(): Promise<Group[]> {
@@ -47,25 +66,18 @@ async function getStoredGroups(): Promise<Group[]> {
     return groups;
   }
 
-  return new Promise<Group[]>((resolve) => {
-    chrome.storage.local.get('groups', (data: any) => { console.log('getStoredGroups:',data); resolve(data.groups||[]) });
-  });
+  return background.getStoredGroups();
 }
 
 async function storeGroup(group: NewGroup): Promise<Group> {
-  const newGroup = { ...group, id: generateId() };
   if (isDev()) {
+    const newGroup = { ...group, id: generateId() };
     await delay(1);
     postGroup(newGroup);
     return newGroup;
   }
 
-  let groups = await getStoredGroups();
-  if (!groups) groups = [newGroup];
-  else groups.push(newGroup);
-
-  console.log('new group:', newGroup);
-  return new Promise<Group>((resolve) => chrome.storage.local.set({ groups }, () => resolve(newGroup)));
+  return background.storeGroup(group)
 }
 
 async function updateGroup(group: Group): Promise<Group> {
@@ -75,12 +87,7 @@ async function updateGroup(group: Group): Promise<Group> {
     return group;
   }
 
-  let groups = await getStoredGroups();
-  if (!groups) reject("The group with given id does not exists");
-  const index = groups.findIndex((g) => g.id === group.id);
-  groups[index] = group;
-
-  return new Promise<Group>((resolve) => chrome.storage.local.set({ groups }, () => resolve(group)));
+  return background.updateGroup(group);
 }
 
 async function deleteGroup(group: Group): Promise<Group> {
@@ -89,59 +96,46 @@ async function deleteGroup(group: Group): Promise<Group> {
     return removeGroup(group);
   }
 
-  let groups = await getStoredGroups();
-  if (!groups) reject("The group with given id does not exists");
-  const index = groups.findIndex((g) => g.id === group.id);
-  const deletedGroup = groups.splice(index, 1)[0];
-
-  return new Promise<Group>((resolve) => chrome.storage.local.set({ groups }, () => resolve(deletedGroup)));
+  return background.deleteGroup(group);
 }
 
-async function createTab(url: string, index: number, windowId?: number) {
-  const properties = { windowId, index, url };
-  return new Promise<Tab>((resolve) => {
-    chrome.tabs.create(properties, resolve);
-  });
+async function openTab(url: string, index: number, windowId?: number) {
+  return background.openTab(url, index, windowId);
 }
 
-async function createTabs(urls: string[]) {
-  if (NODE_ENV == 'development') {
+async function openTabs(urls: string[]) {
+  if (isDev()) {
     urls.forEach((url) => console.log(`Opening a tab with url ${url}`));
     return;
   }
 
-  const currentTabs = await getTabs();
-  const firstIndex = currentTabs.length;
-  return new Promise<Tab[]>(
-    async (resolve) => {
-      const ps = urls.map(async (url, index) => {
-        return await createTab(url, firstIndex + index);
-      });
-      const createdTabs = await Promise.all(ps);
-      resolve(createdTabs);
-    }
-  )
+  return background.openTabs(urls);
 }
 
 function mapTabs2Items(tabs: Tab[]): TabItem[] {
-  return tabs.map((tab) => {
-    const { id, title, url, favIconUrl } = tab;
-    return {
-      id,
-      title,
-      url,
-      favIconUrl,
-      isSelected: false
-    } as TabItem;
-  });
+  if (isDev()) {
+    // return tabs.map((tab) => {
+    //   const { id, title, url, favIconUrl } = tab;
+    //   return {
+    //     id,
+    //     title,
+    //     url,
+    //     favIconUrl,
+    //     isSelected: false
+    //   }
+    // });
+  }
+
+  return background.mapTabs2Items(tabs);
 }
 
 export {
-  getTabs,
+  generateGroupName,
+  getTabItems,
   getStoredGroups,
   storeGroup,
   updateGroup,
   deleteGroup,
-  createTabs,
+  openTabs,
   mapTabs2Items
 }

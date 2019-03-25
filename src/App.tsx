@@ -2,10 +2,10 @@
  * Entry Point
  */
 
-import React, { Component, FormEvent } from 'react';
+import React, { Component} from 'react';
 import Header from './components/header';
 import GroupBox from './components/group';
-import { getTabs, getStoredGroups, storeGroup, updateGroup, deleteGroup, mapTabs2Items, createTabs } from './services/chrome';
+import { getTabItems, getStoredGroups, storeGroup, updateGroup, deleteGroup, mapTabs2Items, openTabs, generateGroupName } from './services/chrome';
 import { UpdateInfo } from './types/UpdateInfo';
 import { Group, isDummy, emptyGroup } from './types/group';
 import { TabItem } from './types/tabItem';
@@ -22,11 +22,9 @@ class App extends Component {
 
   async componentDidMount() {
     const editGroup = { ...this.state.editGroup };
-    const curTabs = await getTabs();
-    editGroup.tabItems = mapTabs2Items(curTabs);
+    editGroup.tabItems = await getTabItems();
 
     const groups = await getStoredGroups();
-    console.log('groups:', groups);
     this.setState({ groups, editGroup });
   }
 
@@ -66,7 +64,7 @@ class App extends Component {
     }
     else urls = urlsOrEvent;
 
-    createTabs(urls);
+    openTabs(urls);
   }
 
   handleSelectTab = (e: React.MouseEvent, group: Group) => {
@@ -106,13 +104,16 @@ class App extends Component {
   handleGroup = async () => {
     const groups = [...this.state.groups];
     let editGroup = { ...this.state.editGroup };
+    if (!editGroup.name) {
+      editGroup.name = await generateGroupName();
+    }
+
     editGroup.tabItems = this.filterExcludedTabs(editGroup.tabItems);
     editGroup = await storeGroup(editGroup);
     groups.push(editGroup);
 
     editGroup = emptyGroup;
-    const curTabs = await getTabs();
-    editGroup.tabItems = mapTabs2Items(curTabs);
+    editGroup.tabItems = await getTabItems();
     this.setState({ groups, editGroup: emptyGroup });
   }
 
@@ -178,24 +179,31 @@ class App extends Component {
     this.setState({ groups, updates });
   }
 
+  prune = (url: string) => {
+    return url.split(/[\s.:\/]/).join("");
+  }
+
   handleFilter = (tab: TabItem) => {
     const query = this.state.query.toLowerCase();
-    if (!query) return true;
 
     const title = tab.title.toLowerCase();
-
-
-    if (title.includes(query)) return true;
-    
-    // TODO: url에 포함된 특수기호 (-, ., _) 등 제거하고 비교하기
+    const prunedTitle = this.prune(title);
     const url = tab.url.toLowerCase();
-    if (url.includes(query)) return true;
+    const prunedUrl = this.prune(url);
+
+    if (title.includes(query)
+      || prunedTitle.includes(query)
+      || url.includes(query)
+      || prunedUrl.includes(query)
+    ) return true;
 
     return false;
   }
 
   renderGroups = () => {
+    const { query } = this.state;
     const updates = this.state.updates;
+    console.log("abc");
     return (
       <div className="groups-container">
         {
@@ -214,7 +222,7 @@ class App extends Component {
                   onChangeName={(e) => { this.handleChangeGroupName(e, group) }}
                   onExcludeTab={(e) => { this.handleSelectTab(e, group) }}
                   onOpenTab={this.handleOpenTab}
-                  filter={this.handleFilter}
+                  filter={query ? this.handleFilter : null}
                 />
               </div>
             );

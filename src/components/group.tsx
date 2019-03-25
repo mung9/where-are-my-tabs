@@ -15,7 +15,7 @@ export interface GroupBoxProps {
   }
   onDelete: (group: Group) => void,
   toggleUpdate: (group: Group) => void,
-  filter: (tab: TabItem) => boolean
+  filter: ((tab: TabItem) => boolean) | null
 }
 
 export interface GroupBoxState {
@@ -31,16 +31,21 @@ class GroupBox extends React.Component<GroupBoxProps, GroupBoxState> {
       const input = this.nameInput.current;
       if (input) input.focus();
     }
+
+    if (!this.state.isDetailed && !prevProps.filter && this.props.filter) {
+      this.toggleDetail();
+    }
   }
 
-  toggleDetail = (e: React.MouseEvent) => {
-    console.log(e.target);
-    if (!(e.target as Element).className.includes('header')) {
-      return;
-    }
-
+  toggleDetail = () => {
     const isDetailed = !this.state.isDetailed;
     this.setState({ isDetailed });
+  }
+
+  handleToggleDetail = (e: React.MouseEvent) => {
+    if ((e.target as Element).className.includes('header')) {
+      this.toggleDetail();
+    }
   }
 
   renderName = () => {
@@ -96,7 +101,7 @@ class GroupBox extends React.Component<GroupBoxProps, GroupBoxState> {
 
   renderHeader = () => {
     return (
-      <div onClick={this.toggleDetail} className="header">
+      <div onClick={this.handleToggleDetail} className="header">
         {this.renderName()}
         {this.renderNav()}
       </div>
@@ -107,7 +112,12 @@ class GroupBox extends React.Component<GroupBoxProps, GroupBoxState> {
     const { filter } = this.props;
     const { group, isEditable, onExcludeTab, onOpenTab } = this.props;
     const { isDetailed } = this.state;
-    const filteredTabs = group.tabItems.filter((item) => filter(item));
+    const filteredTabs = (
+      filter
+        ? group.tabItems.filter((item) => filter(item))
+        : group.tabItems
+    );
+
     if (filteredTabs.length < 1) return null;
 
     const classes = `group ${isDetailed ? "group-detailed" : ""}`;

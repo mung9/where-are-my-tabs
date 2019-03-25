@@ -29,12 +29,36 @@ const TabItems: React.SFC<TabItemsProps> = (props: TabItemsProps) => {
     );
   }
 
+  const handleMouseEnter = (e: React.MouseEvent) => {
+    const target = e.target as HTMLLIElement;
+    const index = target.className.indexOf("tab-item");
+    if (index < 0) return;
+
+    /**
+     * TODO:
+     * 안내 창을 띄운다.
+     * 
+     * 
+     *  */ 
+  }
+
+  const handleMouseLeave = (e: React.MouseEvent) => {
+    console.log(e.target);
+  }
+
   const { tabs, onSelectTab } = props;
   const tabElements = tabs.map((tab, index) => {
     let classes = 'tab-item';
     if (tab.isSelected) classes += " selected";
     return (
-      <li key={index} value={tab.id} onClick={onSelectTab} className={classes}>
+      <li
+        key={index}
+        value={tab.id}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onClick={onSelectTab}
+        className={classes}
+      >
         {renderHeader()}
         {renderContent(tab.title, tab.url)}
         {renderFooter(tab.url)}

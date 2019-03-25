@@ -1,9 +1,14 @@
-import { URL } from "url";
 import { NODE_ENV } from "../config/constants";
 
 let n = 0;
 
+function getHost(url: string){
+  return new URL(url).origin;
+}
+
 export function getFaviconUrl(url: string) {
+  const testUrl = "https://www.naver.com/abc/def.ico";
+  console.log(getHost(testUrl));
   if (NODE_ENV == 'development') {
     const flag = (++n) % 6;
     switch (flag) {
@@ -20,7 +25,6 @@ export function getFaviconUrl(url: string) {
       case 5:
         return "https://www.youtube.com/favicon.ico";
     }
-
   }
-  return `chrome://favicon/size/16@2x/${url}`;
+  return `chrome://favicon/size/16@2x/${getHost(url)}`;
 }
