@@ -35,11 +35,11 @@ async function generateGroupName() {
   return groupName;
 }
 
-async function getTabItems() {
+function getTabItems() {
   return new Promise((resolve) => chrome.tabs.query({ currentWindow: true }, (tabs) => { return resolve(mapTabs2Items(tabs)); }));
 }
 
-async function getStoredGroups() {
+function getStoredGroups() {
   return new Promise((resolve) => {
     chrome.storage.local.get('groups', (data) => { console.log('getStoredGroups:', data); resolve(data.groups || []) });
   });
@@ -74,7 +74,7 @@ async function deleteGroup(group) {
   return new Promise((resolve) => chrome.storage.local.set({ groups }, () => resolve(deletedGroup)));
 }
 
-async function openTab(url, index, windowId) {
+function openTab(url, index, windowId) {
   const properties = { windowId, index, url };
   return new Promise((resolve) => {
     chrome.tabs.create(properties, resolve);

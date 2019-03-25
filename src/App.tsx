@@ -5,7 +5,7 @@
 import React, { Component} from 'react';
 import Header from './components/header';
 import GroupBox from './components/group';
-import { getTabItems, getStoredGroups, storeGroup, updateGroup, deleteGroup, mapTabs2Items, openTabs, generateGroupName } from './services/chrome';
+import { getTabItems, getStoredGroups, storeGroup, updateGroup, deleteGroup, openTabs, generateGroupName } from './services/chrome';
 import { UpdateInfo } from './types/UpdateInfo';
 import { Group, isDummy, emptyGroup } from './types/group';
 import { TabItem } from './types/tabItem';
@@ -29,8 +29,6 @@ class App extends Component {
   }
 
   handleQuery = (query: string) => {
-    // TODO: 검색어에 대한 결과를 출력
-
     this.setState({ query });
   }
 
