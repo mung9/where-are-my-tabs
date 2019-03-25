@@ -1,4 +1,9 @@
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Not publised yet.
+
+## Where-Are-My-Tabs
+
+A chrome extension for grouping tabs, different with bookmarks.
 
 ## Available Scripts
 
