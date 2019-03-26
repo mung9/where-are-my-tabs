@@ -38,6 +38,7 @@ code {
 li{
   list-style: none;
 }
+
 input {
   background-color: rgba(0,0,0,0);
   color: #f1f1f1;
@@ -64,11 +65,23 @@ input::placeholder{
 button {
   cursor: pointer;
   font-size: 15pt;
-  padding: 5px 8px;
+  padding: 3px 5px;
   border: none;
-  border-radius: 5%;
+  border-radius: 10px;
   box-sizing: border-box;
   background-color: orange;
+}
+
+.btn-skel {
+  background: none;
+  border: 0.2em solid #f9f9f9;
+  color: #f9f9f9;
+  opacity: .5;
+  transition: opacitiy 0.3s;
+}
+
+.btn-skel:hover {
+  opacity: 1;
 }
 
 header {
@@ -132,7 +145,7 @@ header .header-row .new-group-detail {
 /********************************/
 .groups-layout{
   /* background-color: #f9f9f9; */
-  width: 90%;
+  width: 80%;
   margin: 0 auto;
   padding: 50px 10px;
 }
@@ -268,14 +281,21 @@ header .header-row .new-group-detail {
   transition: opacity 0.2s, color 0.2s;
 }
 
-.group .header:hover i {
-  opacity: 1;
-}
-
-.group .header .group-nav i:hover {
+.group .header .group-nav button {
   
   color: rgba(255,255,255,1);
+  margin-right: 10px;
+  opacity: 0;
+  transition: opacity 0.2s, color 0.2s;
 }
+
+.group .header:hover button {
+  opacity: 0.5;
+}
+
+.group .header button:hover {
+  opacity: 1.0;
+} 
 
 .tab-container {
   display: flex;
@@ -301,6 +321,8 @@ header .header-row .new-group-detail {
   display:flex;
   flex-direction: column;
   justify-content: space-between;
+
+  transition: opacity 0.3s;
 }
 
 .tab-container .selected {

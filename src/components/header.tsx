@@ -1,8 +1,8 @@
 import * as React from 'react';
-import GroupBox from './group';
 import { Group, NewGroup } from './../types/group';
 import TabItems from './tabItems';
 import KeyCode from '../common/key';
+import GroupNameInput from './groupNameInput';
 
 export interface HeaderProps {
   query: string,
@@ -27,7 +27,7 @@ class Header extends React.Component<HeaderProps, HeaderState> {
   }
 
   handleKeyDown = (e: React.KeyboardEvent) => {
-    if(e.keyCode === KeyCode.ENTER){
+    if (e.keyCode === KeyCode.ENTER) {
       this.props.onGroup();
     }
   }
@@ -52,7 +52,14 @@ class Header extends React.Component<HeaderProps, HeaderState> {
             <h1>WHERE ARE MY TABS?</h1>
           </div>
           <div className="new-group-layout">
-            <input type="text" name='groupName' value={group.name} onKeyDown={this.handleKeyDown} onChange={onChangeGroupName} maxLength={10} placeholder='Group Name' />
+            <GroupNameInput
+              name='groupName'
+              value={group.name}
+              className='group-name-input'
+              onKeyDown={this.handleKeyDown}
+              onChange={onChangeGroupName}
+              placeholder='Group Name'
+            ></GroupNameInput>
             <i
               onClick={() => { this.setState({ isDetailed: false }); onGroup(); }}
               className="fas fa-plus fa-2x">

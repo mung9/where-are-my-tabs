@@ -2,6 +2,8 @@ import * as React from 'react';
 import { TabItem } from './../types/tabItem';
 import { Group } from './../types/group';
 import TabItems from './tabItems';
+import KeyCode from '../common/key';
+import GroupNameInput from './groupNameInput';
 
 export interface GroupBoxProps {
   group: Group,
@@ -54,7 +56,14 @@ class GroupBox extends React.Component<GroupBoxProps, GroupBoxState> {
     let groupName: JSX.Element;
     let onClickName: React.MouseEventHandler | undefined = undefined;
     if (isEditable) {
-      groupName = <input ref={this.nameInput} type="text" value={group.name} onChange={onChangeName} />;
+      groupName = <GroupNameInput
+        ref={this.nameInput}
+        type="text"
+        value={group.name}
+        className='group-name-input'
+        onKeyDown={this.handleKeyDown}
+        onChange={onChangeName}
+      />;
     }
     else {
       groupName = <h3>{group.name}</h3>
@@ -70,12 +79,21 @@ class GroupBox extends React.Component<GroupBoxProps, GroupBoxState> {
     );
   }
 
+  handleKeyDown = (e: React.KeyboardEvent) => {
+    const { onConfirmEdit, group } = this.props;
+    if (e.keyCode === KeyCode.ENTER) {
+      onConfirmEdit(group);
+    }
+  }
+
   renderBtnsOnEdit = () => {
     const { group, onConfirmEdit, toggleUpdate } = this.props;
     return (
       <React.Fragment>
-        <i onClick={() => onConfirmEdit(group)} className="fas fa-check fa-2x"></i>
-        <i onClick={() => toggleUpdate(group)} className="fas fa-times fa-2x"></i>
+        {/* <i onClick={() => onConfirmEdit(group)} className="fas fa-check fa-2x"></i>
+        <i onClick={() => toggleUpdate(group)} className="fas fa-times fa-2x"></i> */}
+        <button onClick={() => onConfirmEdit(group)} className='btn-skel'>OK</button>
+        <button onClick={() => toggleUpdate(group)} className='btn-skel'>Cancel</button>
       </React.Fragment>
     );
   }
@@ -84,8 +102,10 @@ class GroupBox extends React.Component<GroupBoxProps, GroupBoxState> {
     const { group, onDelete, toggleUpdate } = this.props;
     return (
       <React.Fragment>
-        <i onClick={() => toggleUpdate(group)} className="far fa-edit fa-2x"></i>
-        <i onClick={() => onDelete(group)} className="far fa-trash-alt fa-2x"></i>
+        <button onClick={() => toggleUpdate(group)} className='btn-skel'>Update</button>
+        <button onClick={() => onDelete(group)} className='btn-skel'>Delete</button>
+        {/* <i onClick={() => toggleUpdate(group)} className="far fa-edit fa-2x"></i>
+        <i onClick={() => onDelete(group)} className="far fa-trash-alt fa-2x"></i> */}
       </React.Fragment>
     );
   }

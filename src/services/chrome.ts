@@ -6,9 +6,8 @@ import { NODE_ENV } from '../config/constants';
 import { tabs } from '../fakeData/tabs.json';
 // import { groups } from '../fakeData/stored.js';
 import { groups, postGroup, removeGroup } from '../fakeData/stored';
-import { resolve } from 'path';
 
-interface MyWindow extends Window {
+interface BackgroundWindow extends Window {
   generateId: () => number;
   generateGroupName: () => string;
   getTabItems: () => Promise<TabItem[]>;
@@ -23,18 +22,8 @@ interface MyWindow extends Window {
 
 
 function getBackgroundPage() {
-  return new Promise<MyWindow>((resolve) => chrome.runtime.getBackgroundPage((window)=>resolve(window as MyWindow)));
+  return new Promise<BackgroundWindow>((resolve) => chrome.runtime.getBackgroundPage((window)=>resolve(window as BackgroundWindow)));
 }
-
-// let res = null;
-// if (chrome && chrome.extension) {
-//   res = chrome.extension.getBackgroundPage();
-// }
-// if (!res) {
-//   console.log('!!!!!');
-// }
-// const background = res as MyWindow;
-// console.log('background:', background);
 
 function isDev() {
   return (NODE_ENV === 'development');
