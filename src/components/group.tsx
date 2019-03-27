@@ -90,8 +90,6 @@ class GroupBox extends React.Component<GroupBoxProps, GroupBoxState> {
     const { group, onConfirmEdit, toggleUpdate } = this.props;
     return (
       <React.Fragment>
-        {/* <i onClick={() => onConfirmEdit(group)} className="fas fa-check fa-2x"></i>
-        <i onClick={() => toggleUpdate(group)} className="fas fa-times fa-2x"></i> */}
         <button onClick={() => onConfirmEdit(group)} className='btn-skel'>OK</button>
         <button onClick={() => toggleUpdate(group)} className='btn-skel'>Cancel</button>
       </React.Fragment>
@@ -104,8 +102,6 @@ class GroupBox extends React.Component<GroupBoxProps, GroupBoxState> {
       <React.Fragment>
         <button onClick={() => toggleUpdate(group)} className='btn-skel'>Update</button>
         <button onClick={() => onDelete(group)} className='btn-skel'>Delete</button>
-        {/* <i onClick={() => toggleUpdate(group)} className="far fa-edit fa-2x"></i>
-        <i onClick={() => onDelete(group)} className="far fa-trash-alt fa-2x"></i> */}
       </React.Fragment>
     );
   }
