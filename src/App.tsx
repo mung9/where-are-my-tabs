@@ -2,30 +2,51 @@
  * Entry Point
  */
 
-import React, { Component} from 'react';
+import React, { Component, KeyboardEvent } from 'react';
 import Header from './components/header';
 import GroupBox from './components/group';
 import { getTabItems, getStoredGroups, storeGroup, updateGroup, deleteGroup, openTabs, generateGroupName } from './services/chrome';
 import { UpdateInfo } from './types/UpdateInfo';
 import { Group, isDummy, emptyGroup } from './types/group';
 import { TabItem } from './types/tabItem';
+import KeyCode from './common/key';
 import './App.css';
 import '@fortawesome/fontawesome-free/css/all.css';
+
+type OpeningTabHandler = {
+  (urls: string[]): void;
+  (e: React.MouseEvent, group: Group): void;
+}
 
 class App extends Component {
   state: AppState = {
     groups: [],
     editGroup: emptyGroup,
     query: '',
-    updates: {}
+    updates: {},
+    openInNewWindow: false,
   }
 
   async componentDidMount() {
+    document.addEventListener("keydown", this.handleKeyDown);
+
     const editGroup = { ...this.state.editGroup };
     editGroup.tabItems = await getTabItems();
 
     const groups = await getStoredGroups();
     this.setState({ groups, editGroup });
+  }
+
+  componentWillUnmount = () => {
+    document.removeEventListener("keydown", this.handleKeyDown);
+  }
+
+  handleKeyDown = (e: KeyboardEvent | Event) => {
+    if (!('keyCode' in e)) return;
+    if ((e as KeyboardEvent).keyCode === KeyCode.CTRL) {
+      const openInNewWindow = !this.state.openInNewWindow;
+      this.setState({ openInNewWindow });
+    }
   }
 
   handleQuery = (query: string) => {
@@ -43,10 +64,9 @@ class App extends Component {
     this.setState({ updates });
   }
 
-  handleOpenTab(urls: string[]): void;
-  handleOpenTab(e: React.MouseEvent, group: Group): void;
-  handleOpenTab(urlsOrEvent: string[] | React.MouseEvent, group?: Group) {
+  handleOpenTab:OpeningTabHandler = (urlsOrEvent: string[] | React.MouseEvent, group?: Group) => {
     let urls: string[];
+    // When urlsOrEvent is an event type
     if ('currentTarget' in urlsOrEvent) {
       if (!group) return console.log('The parameter `group` must be provided.');
       const e = urlsOrEvent;
@@ -62,7 +82,7 @@ class App extends Component {
     }
     else urls = urlsOrEvent;
 
-    openTabs(urls);
+    openTabs(urls, this.state.openInNewWindow);
   }
 
   handleSelectTab = (e: React.MouseEvent, group: Group) => {
@@ -258,10 +278,11 @@ class App extends Component {
 }
 
 export interface AppState {
-  groups: Group[],
-  editGroup: Group,
-  query: string,
-  updates: { [key: number]: UpdateInfo }
+  groups: Group[];
+  editGroup: Group;
+  query: string;
+  updates: { [key: number]: UpdateInfo };
+  openInNewWindow: boolean;
 }
 
 export default App;
