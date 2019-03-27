@@ -28,7 +28,8 @@ class App extends Component {
   }
 
   async componentDidMount() {
-    document.addEventListener("keydown", this.handleKeyDown);
+    document.addEventListener("keydown", this.handleCtrlKeyDown);
+    document.addEventListener("keyup", this.handleCtrlKeyUp);
 
     const editGroup = { ...this.state.editGroup };
     editGroup.tabItems = await getTabItems();
@@ -38,16 +39,32 @@ class App extends Component {
   }
 
   componentWillUnmount = () => {
-    document.removeEventListener("keydown", this.handleKeyDown);
+    document.removeEventListener("keydown", this.handleCtrlKeyDown);
+    document.removeEventListener("keyup", this.handleCtrlKeyUp);
   }
 
-  handleKeyDown = (e: KeyboardEvent | Event) => {
+  handleCtrlKeyDown = (e: KeyboardEvent | Event) => {
     if (!('keyCode' in e)) return;
-    if ((e as KeyboardEvent).keyCode === KeyCode.CTRL) {
-      const openInNewWindow = !this.state.openInNewWindow;
-      this.setState({ openInNewWindow });
+    if (!e.repeat && e.keyCode === KeyCode.CTRL) {
+      this.setState({ openInNewWindow: true });
     }
   }
+
+  handleCtrlKeyUp = (e: KeyboardEvent | Event) => {
+    if (!('keyCode' in e)) return;
+    if (e.keyCode === KeyCode.CTRL) {
+      this.setState({ openInNewWindow: false });
+    }
+  }
+
+
+  // handleKeyPress = (e: KeyboardEvent | Event) => {
+  //   if (!('keyCode' in e)) return;
+  //   if (!e.repeat && (e as KeyboardEvent).keyCode === KeyCode.CTRL) {
+  //     const openInNewWindow = !this.state.openInNewWindow;
+  //     this.setState({ openInNewWindow });
+  //   }
+  // }
 
   handleQuery = (query: string) => {
     this.setState({ query });
@@ -64,7 +81,7 @@ class App extends Component {
     this.setState({ updates });
   }
 
-  handleOpenTab:OpeningTabHandler = (urlsOrEvent: string[] | React.MouseEvent, group?: Group) => {
+  handleOpenTab: OpeningTabHandler = (urlsOrEvent: string[] | React.MouseEvent, group?: Group) => {
     let urls: string[];
     // When urlsOrEvent is an event type
     if ('currentTarget' in urlsOrEvent) {
@@ -221,7 +238,6 @@ class App extends Component {
   renderGroups = () => {
     const { query } = this.state;
     const updates = this.state.updates;
-    console.log("abc");
     return (
       <div className="groups-container">
         {

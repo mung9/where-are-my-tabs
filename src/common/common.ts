@@ -8,7 +8,6 @@ function getHost(url: string){
 
 export function getFaviconUrl(url: string) {
   const testUrl = "https://www.naver.com/abc/def.ico";
-  console.log(getHost(testUrl));
   if (NODE_ENV == 'development') {
     const flag = (++n) % 6;
     switch (flag) {

@@ -8,6 +8,7 @@ import { tabs } from '../fakeData/tabs.json';
 import { groups, postGroup, removeGroup } from '../fakeData/stored';
 
 interface BackgroundWindow extends Window {
+  createWindow: (createData: chrome.tabs.CreateProperties) => Promise<chrome.windows.Window>
   generateId: () => number;
   generateGroupName: () => string;
   getTabItems: () => Promise<TabItem[]>;
@@ -16,18 +17,18 @@ interface BackgroundWindow extends Window {
   updateGroup: (group: Group) => Promise<Group>;
   deleteGroup: (group: Group) => Promise<Group>
   openTab: (url: string, index: number, windowId?: number) => Promise<Tab>
-  openTabs: (urls: string[]) => Promise<Tab[]>
+  openTabs: (urls: string[], windowId?: number) => Promise<Tab[]>
   mapTabs2Items: (tabs: Tab[]) => TabItem[]
 }
 
-
 function getBackgroundPage() {
-  return new Promise<BackgroundWindow>((resolve) => chrome.runtime.getBackgroundPage((window)=>resolve(window as BackgroundWindow)));
+  return new Promise<BackgroundWindow>((resolve) => chrome.runtime.getBackgroundPage((window) => resolve(window as BackgroundWindow)));
 }
 
 function isDev() {
   return (NODE_ENV === 'development');
 }
+
 
 async function generateId() {
   if (isDev()) {
@@ -43,7 +44,7 @@ async function generateGroupName() {
     return new Date().toDateString();
   }
 
-  const background =  await getBackgroundPage();
+  const background = await getBackgroundPage();
   return background.generateGroupName();
 }
 
@@ -53,7 +54,7 @@ async function getTabItems(): Promise<TabItem[]> {
     return tabs;
   }
 
-  const background =  await getBackgroundPage();
+  const background = await getBackgroundPage();
   return background.getTabItems();
 }
 
@@ -63,7 +64,7 @@ async function getStoredGroups(): Promise<Group[]> {
     return groups;
   }
 
-  const background =  await getBackgroundPage();
+  const background = await getBackgroundPage();
   return background.getStoredGroups();
 }
 
@@ -76,7 +77,7 @@ async function storeGroup(group: NewGroup): Promise<Group> {
     return newGroup;
   }
 
-  const background =  await getBackgroundPage();
+  const background = await getBackgroundPage();
   return background.storeGroup(group);
 }
 
@@ -87,7 +88,7 @@ async function updateGroup(group: Group): Promise<Group> {
     return group;
   }
 
-  const background =  await getBackgroundPage();
+  const background = await getBackgroundPage();
   return background.updateGroup(group);
 }
 
@@ -97,23 +98,30 @@ async function deleteGroup(group: Group): Promise<Group> {
     return removeGroup(group);
   }
 
-  const background =  await getBackgroundPage();
+  const background = await getBackgroundPage();
   return background.deleteGroup(group);
 }
 
-async function openTab(url: string, index: number, windowId?: number) {
-  const background =  await getBackgroundPage();
-  return background.openTab(url, index, windowId);
-}
+// async function openTab(url: string, index: number, windowId?: number) {
+//   const background = await getBackgroundPage();
+//   return background.openTab(url, index, windowId);
+// }
 
-async function openTabs(urls: string[]) {
+async function openTabs(urls: string[], inNewWindow = true) {
   if (isDev()) {
     urls.forEach((url) => console.log(`Opening a tab with url ${url}`));
     return;
   }
 
-  const background =  await getBackgroundPage();
-  return background.openTabs(urls);
+  const background = await getBackgroundPage();
+  console.log('background:', background);
+  let windowId = undefined;
+  if (inNewWindow) {
+    const window = await background.createWindow({});
+    windowId = window.id;
+  }
+  
+  return background.openTabs(urls, windowId);
 }
 
 export {

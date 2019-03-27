@@ -14,6 +14,12 @@ function generateId() {
   return Date.now();
 }
 
+function createWindow(createData) {
+  return new Promise((resolve) => {
+    chrome.windows.create(createData, resolve);
+  });
+}
+
 async function generateGroupName() {
   let groupName = new Date().toDateString();
   const groups = await getStoredGroups();
@@ -81,13 +87,13 @@ function openTab(url, index, windowId) {
   });
 }
 
-async function openTabs(urls) {
+async function openTabs(urls, windowId) {
   const currentTabs = await getTabItems();
   const firstIndex = currentTabs.length;
   return new Promise(
     async (resolve) => {
       const ps = urls.map(async (url, index) => {
-        return await openTab(url, firstIndex + index);
+        return await openTab(url, firstIndex + index, windowId);
       });
       const createdTabs = await Promise.all(ps);
       resolve(createdTabs);
