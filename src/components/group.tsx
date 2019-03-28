@@ -4,6 +4,7 @@ import { Group } from './../types/group';
 import TabItems from './tabItems';
 import KeyCode from '../common/key';
 import GroupNameInput from './groupNameInput';
+import { TooltipContent } from '../types/tooltip';
 
 export interface GroupBoxProps {
   group: Group,
@@ -16,6 +17,7 @@ export interface GroupBoxProps {
     (e: React.MouseEvent, group: Group): void;
   }
   onDelete: (group: Group) => void,
+  onTooltip?: (e: React.MouseEvent, content: TooltipContent) => void;
   toggleUpdate: (group: Group) => void,
   filter: ((tab: TabItem) => boolean) | null
 }
@@ -51,7 +53,7 @@ class GroupBox extends React.Component<GroupBoxProps, GroupBoxState> {
   }
 
   renderName = () => {
-    const { isEditable, group, onChangeName, onOpenTab } = this.props;
+    const { isEditable, group, onChangeName, onOpenTab, onTooltip } = this.props;
 
     let groupName: JSX.Element;
     let onClickName: React.MouseEventHandler | undefined = undefined;
@@ -66,7 +68,16 @@ class GroupBox extends React.Component<GroupBoxProps, GroupBoxState> {
       />;
     }
     else {
-      groupName = <h3>{group.name}</h3>
+      const tooltipContent = {
+        title: group.name,
+        content: `Tabs count: ${group.tabItems.length}`
+      }
+      groupName = (
+        <h3
+          onMouseEnter={e => onTooltip && onTooltip(e, tooltipContent)}
+          onMouseLeave={e => onTooltip && onTooltip(e, tooltipContent)}
+        >{group.name}</h3>
+      );
 
       const urls = group.tabItems.map((i) => i.url);
       onClickName = () => onOpenTab(urls);
@@ -126,7 +137,7 @@ class GroupBox extends React.Component<GroupBoxProps, GroupBoxState> {
 
   render() {
     const { filter } = this.props;
-    const { group, isEditable, onExcludeTab, onOpenTab } = this.props;
+    const { group, isEditable, onExcludeTab, onOpenTab, onTooltip } = this.props;
     const { isDetailed } = this.state;
     const filteredTabs = (
       filter
@@ -145,6 +156,7 @@ class GroupBox extends React.Component<GroupBoxProps, GroupBoxState> {
           isDetailed
             ? <TabItems
               tabs={filteredTabs}
+              onTooltip={onTooltip}
               onSelectTab={isEditable ? onExcludeTab : (e) => { onOpenTab(e, group) }} />
             : null
         }

@@ -1,9 +1,11 @@
 import * as React from 'react';
 import { TabItem } from '../types/tabItem';
 import { getFaviconUrl } from '../common/common';
+import { TooltipContent } from './../types/tooltip';
 
 export interface TabItemsProps {
   tabs: TabItem[],
+  onTooltip?: (e: React.MouseEvent, tooltipContent: TooltipContent) => void;
   onSelectTab?: React.MouseEventHandler
 }
 
@@ -28,34 +30,21 @@ const TabItems: React.SFC<TabItemsProps> = (props: TabItemsProps) => {
       </div>
     );
   }
-
-  const handleMouseEnter = (e: React.MouseEvent) => {
-    const target = e.target as HTMLLIElement;
-    const index = target.className.indexOf("tab-item");
-    if (index < 0) return;
-
-    /**
-     * TODO:
-     * 안내 창을 띄운다.
-     * 
-     * 
-     *  */ 
-  }
-
-  const handleMouseLeave = (e: React.MouseEvent) => {
-    console.log(e.target);
-  }
-
-  const { tabs, onSelectTab } = props;
+  
+  const { tabs, onSelectTab, onTooltip } = props;
   const tabElements = tabs.map((tab, index) => {
     let classes = 'tab-item';
     if (tab.isSelected) classes += " selected";
+    const tooltipContent: TooltipContent = {
+      title: tab.title,
+      content: tab.url
+    }
     return (
       <li
         key={index}
         value={tab.id}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
+        onMouseEnter={e => onTooltip && onTooltip(e, tooltipContent)}
+        onMouseLeave={e => onTooltip && onTooltip(e, tooltipContent)}
         onClick={onSelectTab}
         className={classes}
       >

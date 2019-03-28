@@ -2,16 +2,18 @@
  * Entry Point
  */
 
-import React, { Component, KeyboardEvent } from 'react';
+import React, { Component, KeyboardEvent, MouseEvent } from 'react';
 import Header from './components/header';
 import GroupBox from './components/group';
 import { getTabItems, getStoredGroups, storeGroup, updateGroup, deleteGroup, openTabs, generateGroupName } from './services/chrome';
 import { UpdateInfo } from './types/UpdateInfo';
 import { Group, isDummy, emptyGroup } from './types/group';
 import { TabItem } from './types/tabItem';
+import Tooltip from './components/tooltip';
 import KeyCode from './common/key';
 import './App.css';
 import '@fortawesome/fontawesome-free/css/all.css';
+import { TooltipContent } from './types/tooltip';
 
 type OpeningTabHandler = {
   (urls: string[]): void;
@@ -25,6 +27,10 @@ class App extends Component {
     query: '',
     updates: {},
     openInNewWindow: false,
+    tooltipContent: {
+      title: "This is a header",
+      content: " This is a content",
+    },
   }
 
   async componentDidMount() {
@@ -196,6 +202,15 @@ class App extends Component {
     this.setState({ groups, updates });
   }
 
+  handleTooltip = (e:MouseEvent, tooltipContent: TooltipContent) => {
+    if(e.type==="mouseenter"){
+      this.setState({ tooltipContent });
+    }
+    else if(e.type==="mouseleave"){
+      this.setState({ tooltipContent: null });
+    }
+  }
+
   filterExcludedTabs = (src: TabItem[]) => {
     return src.filter((item) => !item.isSelected);
   }
@@ -256,6 +271,7 @@ class App extends Component {
                   onChangeName={(e) => { this.handleChangeGroupName(e, group) }}
                   onExcludeTab={(e) => { this.handleSelectTab(e, group) }}
                   onOpenTab={this.handleOpenTab}
+                  onTooltip={this.handleTooltip}
                   filter={query ? this.handleFilter : null}
                 />
               </div>
@@ -282,12 +298,15 @@ class App extends Component {
   }
 
   render() {
+    const tooltipContent = this.state.tooltipContent as TooltipContent;
+
     return (
       <div className="container">
         {this.renderHeader()}
         <div className='groups-layout'>
           {this.renderGroups()}
         </div>
+        {tooltipContent && <Tooltip tooltipContent={tooltipContent} />}
       </div>
     );
   }
@@ -299,6 +318,7 @@ export interface AppState {
   query: string;
   updates: { [key: number]: UpdateInfo };
   openInNewWindow: boolean;
+  tooltipContent: TooltipContent | null;
 }
 
 export default App;
