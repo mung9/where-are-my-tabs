@@ -29,6 +29,7 @@
   ],
   "devDependencies": {
     "@types/chrome": "0.0.81",
-    "prettier": "^1.16.4"
+    "prettier": "^1.16.4",
+    "webpack-dev-server": "^3.2.1"
   }
 }

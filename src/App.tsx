@@ -63,15 +63,6 @@ class App extends Component {
     }
   }
 
-
-  // handleKeyPress = (e: KeyboardEvent | Event) => {
-  //   if (!('keyCode' in e)) return;
-  //   if (!e.repeat && (e as KeyboardEvent).keyCode === KeyCode.CTRL) {
-  //     const openInNewWindow = !this.state.openInNewWindow;
-  //     this.setState({ openInNewWindow });
-  //   }
-  // }
-
   handleQuery = (query: string) => {
     this.setState({ query });
   }
