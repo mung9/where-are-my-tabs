@@ -1,8 +1,8 @@
 {
   "name": "Where are my tabs?",
   "description": "where-are-my-tabs chrome extension",
-  "version": "0.0.0",
-  "version_name": "0.0.0",
+  "version": "1.0.0",
+  "version_name": "1.0.0",
   "manifest_version": 2,
   "background": {
     "scripts": ["background.js"],
