@@ -1,5 +1,5 @@
 # Where are my tabs?
-> google-chrome extension
+> google-chrome extension, create-react-app, typescript
 
 구글 크롬 브라우저의 탭을 그룹 별로 묶어 나중에 다시 방문할 수 있도록 해주는 크롬 익스텐션입니다. `create-react-app`을 사용하여 개발되었습니다.
 
